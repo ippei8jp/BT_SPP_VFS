@@ -172,3 +172,33 @@ ESP32側はクライアントモードで動いているものとする。
 - 見つかったら選択して「次へ」
 - パスコードが表示されたら双方で確認して「はい」(ぼんやりしてるとタイムアウトするので注意) ※ ESP32側は自動でy入力される。
 
+
+
+
+# タスク一覧の表示  (2022/02/17追加)
+Menuconfigで以下の設定を行ってコンパイルするとタスク一覧を表示できる。  
+リポジトリは変更済み。不要なら戻してください。  
+
+- PLATFORMIO サイドバーでPROJECT TASKS→esp32dev→Platform→Run Menuconfig をクリック  
+    - (Top) → Component config → FreeRTOS を選択  
+        - Enable FreeRTOS trace facility を選択して有効化  
+        - Enable FreeRTOS stats formatting functions を有効化  
+        - Enable display of xCoreID in vTaskList を有効化  
+    - (TOP)まで戻ってESCでSaveして終了  
+
+メインループで``t``キーを入力するとその時点でのタスク一覧が表示される。  
+表示結果はこんな感じ  
+左から、タスク名、タスク状態、プライオリティ、スタック空きサイズ、タスク番号、Core ID(-1はCore指定せず?)
+  ※ プライオリティは数値が大きい方がプライオリティが高い
+
+タスク状態の文字は以下を意味する
+
+ ``X`` ：実行中、 ``R`` ：実行可能、``B`` ：ブロック状態 、 ``D``：削除、``S`` ：サスペンド状態
+
+```
+main            X       1       1832    5       0
+IDLE            R       0       1880    7       1
+IDLE            R       0       1856    6       0
+...
+...
+```

@@ -63,6 +63,9 @@ static void main_loop_usage(void)
     printf("    f : Connect 1st channel\n");                // 接続(チャネル1)
     printf("    g : Connect 2nd channel\n");                // 接続(チャネル2)
 #endif  // SPP_CLIENT_MODE
+#ifdef CONFIG_FREERTOS_USE_TRACE_FACILITY
+    printf("    t : Show task list\n");                     // タスクリストの表示
+#endif // CONFIG_FREERTOS_USE_TRACE_FACILITY
     printf("    Z : close all channels\n");                 // すべてのチャネルを切断
     printf("=================================================================\n");
 }
@@ -176,6 +179,50 @@ void app_main(void)
             }
             break;
 #endif  // SPP_CLIENT_MODE
+#ifdef CONFIG_FREERTOS_USE_TRACE_FACILITY
+          case 't' :                                    // タスクリストの表示
+            {
+                // %HOMEPATH%\.platformio\packages\framework-espidf\examples\system\console\components\cmd_system\cmd_system.c から流用
+
+                const size_t bytes_per_task = 40;       // 1タスクあたりのメッセージ長
+                // メッセージ領域確保
+                char *task_list_buffer = malloc(uxTaskGetNumberOfTasks() * bytes_per_task);
+                if (task_list_buffer == NULL) {
+                    // 確保失敗
+                    ESP_LOGE(TAG, "failed to allocate buffer for vTaskList output");
+                }
+                else {
+                    // 確保成功
+                    // ヘッダ表示
+                    fputs("Task Name\tStatus\tPrio\tHWM\tTask#", stdout);
+#ifdef CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
+                    fputs("\tAffinity", stdout);
+#endif
+                    fputs("\n", stdout);
+
+                    // タスクリストの取得
+                    vTaskList(task_list_buffer);
+                    // 結果表示
+                    fputs(task_list_buffer, stdout);
+                        // 表示は 左から
+                        //      タスク名
+                        //      タスク状態
+                        //          `X` ：実行中
+                        //          `R` ：実行可能
+                        //          `B` ：ブロック状態
+                        //          `S` ：サスペンド状態
+                        //          `D` ：削除
+                        //      プライオリティ(数値が高い方がプライオリティ高)
+                        //      スタック空きサイズ
+                        //      タスク番号
+                        //      Core ID(-1はCore指定せず)
+
+                    // メッセージ領域解放
+                    free(task_list_buffer);
+                }
+            }
+            break;
+#endif // CONFIG_FREERTOS_USE_TRACE_FACILITY
           case 'Z' :                                    // すべてのチャネルを切断 *********************************
             spp_close_all_handle();
             break;
