@@ -102,7 +102,7 @@ void spp_open_handler(uint32_t bd_handle, int fd, esp_bd_addr_t bda)
 
     // データタスクの生成
     BaseType_t ret;
-    ret = xTaskCreate(spp_data_task, "spp_data_task", 2048, (void *)fd, 5, &task_handle);
+    ret = xTaskCreate(spp_data_task, "spp_data_task", 4096, (void *)fd, 5, &task_handle);
     if (ret == pdPASS) {
         open_hdr_params[idx].use            = true;
         memcpy(open_hdr_params[idx].bda, bda, sizeof(esp_bd_addr_t)) ;
