@@ -27,7 +27,7 @@
 #include "spp_test.h"
 #include "gap_cb.h"
 #include "spp_cb.h"
-#include "spp_open_hdr.h"
+#include "spp_user_hdr.h"
 #include "bt_utils.h"
 #include "uart_console.h"
 
