@@ -90,7 +90,7 @@ void app_main(void)
     }
 
     // Bluetooth初期化
-    err = spp_init();
+    err = spp_init(ESP_SPP_MODE_VFS);
     if (err != ESP_OK) {
         abort();
     }

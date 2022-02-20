@@ -7,5 +7,5 @@
 */
 
 // extern宣言
-extern esp_err_t spp_init(void);
+extern esp_err_t spp_init(esp_spp_mode_t mode);
 

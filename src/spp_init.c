@@ -21,9 +21,6 @@
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
 
-#include "esp_vfs.h"
-#include "sys/unistd.h"
-
 #include "spp_test.h"
 #include "gap_cb.h"
 #include "spp_cb.h"
@@ -37,7 +34,7 @@
 // ================================================================================================
 // Bluetooth(SPP)初期化
 // ================================================================================================
-esp_err_t spp_init(void)
+esp_err_t spp_init(esp_spp_mode_t mode)
 {
     esp_err_t err;
 
@@ -92,7 +89,7 @@ esp_err_t spp_init(void)
     }
 
     // SPP初期化
-    err = esp_spp_init(ESP_SPP_MODE_VFS);
+    err = esp_spp_init(mode);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "spp init failed: %s", esp_err_to_name(err));
         return err;

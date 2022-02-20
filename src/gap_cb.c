@@ -21,9 +21,6 @@
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
 
-#include "esp_vfs.h"
-#include "sys/unistd.h"
-
 #include "spp_test.h"
 #include "spp_user_hdr.h"
 #include "bt_utils.h"

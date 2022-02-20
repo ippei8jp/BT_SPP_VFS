@@ -21,9 +21,6 @@
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
 
-#include "esp_vfs.h"
-#include "sys/unistd.h"
-
 #include "spp_test.h"
 #include "spp_user_hdr.h"
 #include "bt_utils.h"
@@ -46,12 +43,6 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
             // VFS(virtual File System)の登録
             esp_spp_vfs_register();
 #ifdef  SPP_CLIENT_MODE         // SPP クライアントモード
-#if 0   // 元のサンプルプログラムの処理は削除
-            esp_bt_inq_mode_t inq_mode = ESP_BT_INQ_MODE_GENERAL_INQUIRY;
-            uint8_t inq_len = 30;
-            uint8_t inq_num_rsps = 0;
-            esp_bt_gap_start_discovery(inq_mode, inq_len, inq_num_rsps);
-#endif
 #else  // SPP_CLIENT_MODE
             // SPPサーバのスタート
             esp_spp_start_srv(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_SLAVE, 0, SPP_SERVER_NAME);
@@ -84,11 +75,6 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
         }
 #ifdef  SPP_CLIENT_MODE         // SPP クライアントモード
         if (param->disc_comp.status == ESP_SPP_SUCCESS) {
-#if 0   // 元のサンプルプログラムの処理は削除
-            esp_spp_sec_t   sec_mask    = ESP_SPP_SEC_AUTHENTICATE;
-            esp_spp_role_t  role_master = ESP_SPP_ROLE_MASTER;
-            esp_spp_connect(sec_mask, role_master, param->disc_comp.scn[0], host_bd_address);
-#else
             if (param->disc_comp.scn_num >= 1) {
                 found_scn1            = true;
                 host_service_channel1  =  param->disc_comp.scn[0];
@@ -97,7 +83,6 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
                 found_scn2            = true;
                 host_service_channel2 =  param->disc_comp.scn[1];
             }
-#endif
         }
 #endif  // SPP_CLIENT_MODE
         break;
@@ -108,7 +93,7 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
         ESP_LOGV(TAG, "    fd      : %d", param->open.fd);
 #ifdef  SPP_CLIENT_MODE         // SPP クライアントモード
         if (param->open.status == ESP_SPP_SUCCESS) {
-            // オープンハンドラ
+            // オープンユーザハンドラ
             spp_open_handler(param->open.handle, param->open.fd, param->open.rem_bda);
         }
 #endif  // SPP_CLIENT_MODE
@@ -118,8 +103,10 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
         ESP_LOGV(TAG, "    port_status  : %d", param->close.port_status);
         ESP_LOGV(TAG, "    handle       : %d", param->close.handle);
         ESP_LOGV(TAG, "    async        : %s", param->close.async ? "true" : "false");
-        // クローズハンドラ
-        spp_close_handler(param->close.handle);
+        if (param->close.status == ESP_SPP_SUCCESS) {
+            // クローズユーザハンドラ
+            spp_close_handler(param->close.handle);
+        }
         break;
     case ESP_SPP_START_EVT:
         ESP_LOGV(TAG, "    status : %d", param->start.status);
@@ -143,23 +130,23 @@ void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)            
 #ifdef  SPP_CLIENT_MODE         // SPP クライアントモード
 #else   // SPP_CLIENT_MODE
         if (param->srv_open.status == ESP_SPP_SUCCESS) {
-            // オープンハンドラ
+            // オープンユーザハンドラ
             spp_open_handler(param->srv_open.handle, param->srv_open.fd, param->srv_open.rem_bda);
         }
 #endif  // SPP_CLIENT_MODE
         break;
-      case ESP_SPP_DATA_IND_EVT :
+      case ESP_SPP_DATA_IND_EVT :           // callbackモード時のみ
         ESP_LOGV(TAG, "    status : %d", param->data_ind.status);
         ESP_LOGV(TAG, "    handle : %d", param->data_ind.handle);
         ESP_LOGV(TAG, "    len    : %d", param->data_ind.len);
         esp_log_buffer_hex(TAG,          param->data_ind.data,param->data_ind.len);
         break;
-      case ESP_SPP_CONG_EVT :
+      case ESP_SPP_CONG_EVT :               // callbackモード時のみ     // cong → congestion → 輻輳/集中
         ESP_LOGV(TAG, "    status : %d", param->cong.status);
         ESP_LOGV(TAG, "    handle : %d", param->cong.handle);
         ESP_LOGV(TAG, "    cong   : %s", param->cong.cong ? "true" : "false");
         break;
-      case ESP_SPP_WRITE_EVT :
+      case ESP_SPP_WRITE_EVT :              // callbackモード時のみ
         ESP_LOGV(TAG, "    status : %d", param->write.status);
         ESP_LOGV(TAG, "    handle : %d", param->write.handle);
         ESP_LOGV(TAG, "    len    : %d", param->write.len);

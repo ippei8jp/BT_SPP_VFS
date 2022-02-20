@@ -22,9 +22,6 @@
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
 
-#include "esp_vfs.h"
-#include "sys/unistd.h"
-
 #include "bt_utils.h"
 
 #define TAG                 __func__
